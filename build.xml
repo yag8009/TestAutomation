@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="GBK" ?>
+<project name="TestAutomation" default="mail" basedir=".">
+
+	<!-- ========== Initialize Properties =================================== -->
+	<property environment="env" />
+
+	<property name="test.dest" value="./build" />
+	<property name="test.classes" value="${test.dest}/classes" />
+	<property name="testresult" value="./test-output" />
+	<property name="test.src" value="./src" />
+	<property name="test.lib" value="./lib" />
+	<property name="testresult.encoding" value="GBK" />
+
+	<target name="setClassPath" unless="test.classpath">
+		<path id="classpath_jars">
+			<fileset dir="./lib" includes="*.jar" />
+		</path>
+		<pathconvert pathsep=":" property="test.classpath" refid="classpath_jars" />
+	</target>
+
+	<target name="init" depends="setClassPath">
+		<tstamp>
+			<format property="start.time" pattern="MM/dd/yyyy hh:mm aa" />
+		</tstamp>
+		<condition property="ANT" value="${env.ANT_HOME}/bin/ant.bat" else="${env.ANT_HOME}/bin/ant">
+			<os family="windows" />
+		</condition>
+		<taskdef name="testng" classpath="${test.classpath}" classname="org.testng.TestNGAntTask" />
+	</target>
+
+	<!-- clean -->
+	<target name="clean">
+		<echo message="Clean directory" />
+		<delete dir="${test.dest}" />
+		<delete dir="${testresult}" />
+	</target>
+
+	<!-- compile -->
+	<target name="compile" depends="init, clean">
+		<delete includeemptydirs="true" quiet="true">
+			<fileset dir="${test.dest}" includes="**/*" />
+		</delete>
+		<echo message="making directory..." />
+		<mkdir dir="${test.dest}" />
+		<mkdir dir="${test.dest}/classes" />
+		<echo message="classpath: ${test.classpath}" />
+		<echo message="compiling..." />
+		<javac debug="true" encoding="UTF-8" destdir="${test.dest}/classes" includes="**/*.java" srcdir="${test.src}" target="1.7" classpath="${test.classpath}" includeantruntime="false">
+		</javac>
+		<copy todir="./build/classes">
+			<fileset dir="./resource">
+				<include name="**/*" />
+			</fileset>
+			<fileset dir="${test.src}">
+				<include name="*.properties" />
+			</fileset>
+		</copy>
+	</target>
+
+
+	<!-- build -->
+	<target name="build" depends="init">
+	</target>
+
+	<target name="usage">
+		<echo message="......................Instruction......................" />
+		<echo message="                                    " />
+		<echo message="ant   all" />
+		<echo message="ant   Login" />
+		<echo message="    command    : ant -p" />
+	</target>
+
+	<target name="BVT" depends="compile" description="Test All Scenarios">
+		<testng classpath="${test.classpath}:${test.classes}" suitename="all">
+			<xmlfileset dir="./test-xml" includes="all.xml" />
+		</testng>
+	</target>
+
+	<target name="convert" depends="BVT">
+		<replace file ="${testresult}/testng-results.xml" token="UTF-8" value="GBK" encoding="GBK"/>
+		</target>
+
+	<target name="transform" depends="convert">
+		<xslt in="${testresult}/testng-results.xml" style="${basedir}/testng-results.xsl" out="${basedir}/test-output/index1.html">
+			<!-- you need to specify the directory here again -->
+			<param name="testNgXslt.outputDir" expression="${basedir}/test-output/" />
+			<classpath refid="classpath_jars" />
+		</xslt>
+	</target>
+
+	<target name="mail" depends="transform">
+		<tstamp>
+			<format property="TODAY" pattern="yyyy-MM-dd" />
+			<format property="TSTAMP" pattern="hh:mm:ss" />
+		</tstamp>
+		<mail messageMimeType="text/html" messageFile="test-output/overview.html" mailhost="smtp.huoyunren.com" mailport="25" subject="自动化测试报告" user="xxx@163.com" password="xxxxxx">
+			<from address="xxx@163.com" name="xxx" />
+			<to address="xxx@163.com"/>
+			<cc address="xxx@163.com" />
+			<fileset dir="test-output">
+				<include name="emailable-report.html" />
+			</fileset>
+		</mail>
+		<echo message="complete send mail" />
+	</target>
+</project>
