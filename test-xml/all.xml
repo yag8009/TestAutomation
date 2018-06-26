@@ -1,9 +1,0 @@
-<suite reruntimes="2" thread-count="1" parallel="tests" verbose="10"
-	name="BVT" annotations="JDK" time-out="1800000">
-
-	<test name="PostmanTest" junit="false" annotations="JDK">
-		<classes>
-			<class name="com.g7s.test.cases.PostmanTest" />
-		</classes>
-	</test>
-</suite>

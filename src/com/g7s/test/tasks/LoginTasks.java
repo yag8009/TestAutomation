@@ -1,4 +1,4 @@
-package com.g7s.test.tasks;
+﻿package com.g7s.test.tasks;
 
 import org.apache.log4j.Logger;
 
@@ -17,7 +17,7 @@ public class LoginTasks {
 	}
 
 	public void loginHome(BrowserEmulator browser) {
-		log.info ("登陆G7s: '" + name + "' password: '"
+		log.info ("登陆: '" + name + "' password: '"
 				+ passwd + "'");
 
 		browser.open(url);
